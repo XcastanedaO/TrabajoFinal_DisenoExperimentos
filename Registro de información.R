@@ -212,8 +212,8 @@ tukey.add.test(y_luz, marca_luz, operador_luz)
 mod <- aov(y_luz ~ marca_luz*operador_luz, data = luz)
 summary(mod)
 
-#### -------------------- Descriptivos para voltaje
-
+#### -------------------- Descriptivos para voltaje --------------------------------------
+# Por operador:
 by(voltaje_ord$orden_vol, voltaje_ord$operador_ord, summary)
 by(voltaje_ord$orden_vol, voltaje_ord$operador_ord, sd)
 
@@ -230,7 +230,7 @@ ggplot(data = voltaje_ord, aes(x = operador_ord, y = orden_vol, fill = factor(op
                size=4, color="yellow", position = position_dodge(0.75))+
   scale_fill_manual(values = c("blue", "red","green", "pink"))+labs(fill = "Operador")
 
-### --------------- Descriptivos para marca
+### --------------- Descriptivos por marca
 by(voltaje_ord$orden_vol, voltaje_ord$marca_ord, summary)
 by(voltaje_ord$orden_vol, voltaje_ord$marca_ord, sd)
 
@@ -256,4 +256,51 @@ ggplot(voltaje_ord,aes(operador_ord,orden_vol, fill = operador_ord))+geom_boxplo
 
 ggplot(voltaje_ord,aes(marca_ord,orden_vol, fill = marca_ord))+geom_boxplot()+facet_wrap(~operador_ord)+
   stat_summary(aes(y=orden_vol, x=marca_ord),fun=mean, geom="point", shape=20,size=4, color="yellow", position = position_dodge(0.75))+
+  labs(fill = "Marca", x = "Marca", y = "Voltaje")
+
+
+##### ---------------------------- Descriptivos luminosidad:
+# Por operador:
+by(luz$y_luz, luz$operador_luz, summary)
+by(luz$y_luz, luz$operador_luz, sd)
+
+ggplot(data = luz, aes(x = operador_luz, y = y_luz, fill = factor(operador_luz))) +
+  stat_boxplot(geom = "errorbar",
+               width = 0.2) +
+  geom_boxplot(alpha = 0.6, outlier.colour = "red") +
+  scale_y_continuous(name = "Luminosidad") + 
+  scale_x_discrete(name = "Operador") +
+  ggtitle("Boxplot: Luminosidad de acuerdo al operador") +     
+  theme(axis.line = element_line(colour = "black",
+                                 size = 0.25))+
+  stat_summary(aes(y=y_luz, x=operador_luz),fun=mean, geom="point", shape=20,
+               size=4, color="yellow", position = position_dodge(0.75))+
+  scale_fill_manual(values = c("blue", "red","green", "pink"))+labs(fill = "Operador")
+
+### --------------- Descriptivos por marca
+by(luz$y_luz, luz$marca_luz, summary)
+by(luz$y_luz, luz$marca_luz, sd)
+
+ggplot(data = luz, aes(x = marca_luz, y = y_luz, fill = factor(marca_luz))) +
+  stat_boxplot(geom = "errorbar",
+               width = 0.2) +
+  geom_boxplot(alpha = 0.6, outlier.colour = "red") +
+  scale_y_continuous(name = "Luminosidad") + 
+  scale_x_discrete(name = "Marca") +
+  ggtitle("Boxplot: Luminosidad de acuerdo al operador") +     
+  theme(axis.line = element_line(colour = "black",
+                                 size = 0.25))+
+  stat_summary(aes(y=y_luz, x=marca_luz),fun=mean, geom="point", shape=20,
+               size=4, color="yellow", position = position_dodge(0.75))+
+  scale_fill_manual(values = c("blue", "red","green", "pink", "cyan"))+labs(fill = "Marca")
+
+### ------------- Por operador y marca
+# No tiene mucho sentido pues solo hay una observación por tratamiento pero ayuda a mirar variabilidad:
+ggplot(luz,aes(operador_luz,y_luz, fill = operador_luz))+geom_boxplot()+facet_wrap(~marca_luz)+
+  stat_summary(aes(y=y_luz, x=operador_luz),fun=mean, geom="point", shape=20,size=4, color="yellow", position = position_dodge(0.75))+
+  labs(fill = "Operador", x = "Operador", y = "Luminosidad")
+
+
+ggplot(luz,aes(marca_luz,y_luz, fill = marca_luz))+geom_boxplot()+facet_wrap(~operador_luz)+
+  stat_summary(aes(y=y_luz, x=marca_luz),fun=mean, geom="point", shape=20,size=4, color="yellow", position = position_dodge(0.75))+
   labs(fill = "Marca", x = "Marca", y = "Voltaje")
