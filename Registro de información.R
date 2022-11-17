@@ -238,111 +238,90 @@ ggplot(voltaje_ord, aes(orden_vol)) +
   labs(x = "Tiempo de reacción", y = "Densidad", fill = "Bloque")+
   theme_bw()+scale_x_continuous(limits=c(0,1))
 
+####No paramétrico
+friedman.test(y_vol, marca, operador)
+kruskal.test(y_vol~marca,data=voltaje) #:(
+
+### Test de Quade
+datos <-  matrix(c(vero_duracell_dif, vero_futura_dif, vero_panasonic_dif, vero_tronex_dif, vero_varta_dif,
+                   vale_duracell_dif, vale_futura_dif, vale_panasonic_dif, vale_tronex_dif, vale_varta_dif,
+                   Xim_duracell_dif, Xim_futura_dif, Xim_panasonic_dif, Xim_tronex_dif, Xim_varta_dif,
+                   Yojan_duracell_dif, Yojan_futura_dif, Yojan_panasonic_dif, Yojan_tronex_dif, Yojan_varta_dif),
+                 nrow = 4, byrow = TRUE,
+                 dimnames =
+                   list(operador = c("Vero", "Vale", "Xime", "Yojan"),
+                        marca= c("Duracell", "Futura", "Panasonic", "Tronex", "Varta")))
+datos
+quade.test(datos)
+#############################
+
+####### Eliminando los mínimos 
+# Vale - duracell   # Xime-futura  #Yojan-tronex  #Vero - varta
+# de panasonic se quitó la de ximena
+
+sin_ord <- c(vale_tronex_dif, Xim_duracell_dif, vero_futura_dif, Yojan_futura_dif,
+             vale_varta_dif,vero_duracell_dif, Yojan_varta_dif,
+             vale_futura_dif, vero_tronex_dif, 
+             Yojan_panasonic_dif,vale_panasonic_dif, Xim_tronex_dif,
+             vero_panasonic_dif,Yojan_duracell_dif,Xim_varta_dif)
+
+marca_sin <- as.factor(c("Tronex","Duracell","Futura","Futura", 
+                         "Varta", "Duracell", "Varta",
+                         "Futura","Tronex","Panasonic","Panasonic","Tronex",
+                         "Panasonic","Duracell","Varta"
+))
 
 
-############################### Luminosidad ########################
-######### Luz #########
-y_luz <- c(40, 10, 22, 26,
-           28, 31, 44, 33,
-           6, 6, 7, 14,
-           41, 44, 51, 7,
-           26, 31, 45, 11)
+sin_replica_ord <- data.frame(sin_ord,marca_sin)
 
-marca_luz <-c("Duracell", "Tronex", "Futura","Futura",
-              "Varta","Varta", "Duracell", "Panasonic",
-              "Tronex", "Tronex", "Futura", "Futura",
-              "Varta", "Panasonic", "Panasonic", "Tronex",
-              "Panasonic", "Duracell", "Duracell", "Varta")
+by(sin_replica_ord$sin_ord, sin_replica_ord$marca_sin, summary)
+by(sin_replica_ord$sin_ord, sin_replica_ord$marca_sin, sd)
 
-operador_luz <- c("Ximena", "Valentina", "Veronica", "Yojan",
-                  "Valentina", "Yojan", "Veronica", "Ximena",
-                  "Veronica", "Yojan", "Valentina", "Ximena", 
-                  "Veronica", "Valentina", "Yojan", "Ximena", 
-                  "Veronica", "Yojan", "Valentina", "Ximena")
-
-luz <- data.frame(y_luz, marca_luz,operador_luz)
-
-##### ---------------------------- Descriptivos luminosidad:
-# Por operador:
-by(luz$y_luz, luz$operador_luz, summary)
-by(luz$y_luz, luz$operador_luz, sd)
-
-ggplot(data = luz, aes(x = operador_luz, y = y_luz, fill = factor(operador_luz))) +
+ggplot(data = sin_replica_ord, aes(x = marca_sin, y = sin_ord, fill = factor(marca_sin))) +
   stat_boxplot(geom = "errorbar",
                width = 0.2) +
   geom_boxplot(alpha = 0.6, outlier.colour = "red") +
-  scale_y_continuous(name = "Luminosidad") + 
-  scale_x_discrete(name = "Operador") +
-  ggtitle("Boxplot: Luminosidad de acuerdo al operador") +     
-  theme(axis.line = element_line(colour = "black",
-                                 size = 0.25))+
-  stat_summary(aes(y=y_luz, x=operador_luz),fun=mean, geom="point", shape=20,
-               size=4, color="yellow", position = position_dodge(0.75))+
-  scale_fill_manual(values = c("blue", "red","green", "pink"))+labs(fill = "Operador")
-
-### --------------- Descriptivos por marca
-by(luz$y_luz, luz$marca_luz, summary)
-by(luz$y_luz, luz$marca_luz, sd)
-
-ggplot(data = luz, aes(x = marca_luz, y = y_luz, fill = factor(marca_luz))) +
-  stat_boxplot(geom = "errorbar",
-               width = 0.2) +
-  geom_boxplot(alpha = 0.6, outlier.colour = "red") +
-  scale_y_continuous(name = "Luminosidad") + 
+  scale_y_continuous(name = "Voltaje") + 
   scale_x_discrete(name = "Marca") +
-  ggtitle("Boxplot: Luminosidad de acuerdo al operador") +     
+  ggtitle("Boxplot: Voltaje de acuerdo a la marca") +     
   theme(axis.line = element_line(colour = "black",
                                  size = 0.25))+
-  stat_summary(aes(y=y_luz, x=marca_luz),fun=mean, geom="point", shape=20,
+  stat_summary(aes(y=sin_ord, x=marca_sin),fun=mean, geom="point", shape=20,
                size=4, color="yellow", position = position_dodge(0.75))+
-  scale_fill_manual(values = c("blue", "red","green", "pink", "cyan"))+labs(fill = "Marca")
+  scale_fill_manual(values = c("blue", "red","green", "pink", "magenta"))+labs(fill = "Marca")
 
-### ------------- Por operador y marca
-# No tiene mucho sentido pues solo hay una observación por tratamiento pero ayuda a mirar variabilidad:
-ggplot(luz,aes(operador_luz,y_luz, fill = operador_luz))+geom_boxplot()+facet_wrap(~marca_luz)+
-  stat_summary(aes(y=y_luz, x=operador_luz),fun=mean, geom="point", shape=20,size=4, color="yellow", position = position_dodge(0.75))+
-  labs(fill = "Operador", x = "Operador", y = "Luminosidad")
+mod_marca <- aov(sin_ord~marca_sin)
+summary(mod_marca)
 
+#Homogeneidad
+bartlett.test(sin_ord~marca_sin)
 
-ggplot(luz,aes(marca_luz,y_luz, fill = marca_luz))+geom_boxplot()+facet_wrap(~operador_luz)+
-  stat_summary(aes(y=y_luz, x=marca_luz),fun=mean, geom="point", shape=20,size=4, color="yellow", position = position_dodge(0.75))+
-  labs(fill = "Marca", x = "Marca", y = "Voltaje")
-
-
-
-
-
-
-modelo_luz <- aov(y_luz~marca_luz+operador_luz, data = luz)
-summary(modelo_luz)
-
-#Normalidad
-qqnorm(residuals(modelo_luz))
-qqline(residuals(modelo_luz))
-
-shapiro.test(residuals(modelo_luz))
-
-# Homogeneidad
-bartlett.test(y_luz~marca_luz)
-plot(fitted(modelo_luz),residuals(modelo_luz))
-abline(h=0)
-
-# Independencia
-#Prueba de independencia Durbin Watson
-library(car)
-durbinWatsonTest(modelo_luz)
+#durbinWatsonTest(modelo)
+durbinWatsonTest(mod_marca)
 
 #Gráfico de residuales vs orden de recolección
-plot(residuals(modelo_luz), pch =16, ylab="Residuales", xlab="Orden",
+plot(residuals(mod_marca), pch =16, ylab="Residuales", xlab="Orden",
      main="Gráfico de Orden vs Residuales")
 abline(h=0)
 
-library(asbio)
-tukey.add.test(y_luz, marca_luz, operador_luz)
+qqnorm(residuals(mod_marca))
+qqline(residuals(mod_marca))
 
-#Modelo interacción 
-mod <- aov(y_luz ~ marca_luz*operador_luz, data = luz)
-summary(mod)
+shapiro.test(residuals(mod_marca))
 
+#Comparaciones 
 
+tukey <- TukeyHSD(mod_marca, "marca_sin")
+tukey
 
+require(agricolae)
+duncann <- duncan.test(mod_marca, "marca_sin")
+duncann
+
+mds <- LSD.test(mod_marca, "marca_sin")
+mds
+
+# Tamaño de muestra 
+library(pwr)
+f1 = sqrt(0.03^2/(2*5*0.0002037))
+pwr.anova.test(f = f1, k=5, power=0.9, sig.level=0.05)
