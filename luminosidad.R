@@ -1,134 +1,122 @@
-
-############################### Luminosidad ########################
-######### Luz #########
+library(ggplot2)
+library(car)
+require(agricolae)
+library(pwr)
+# --------------- Intensidad lumínica (lux) -----------------------------------
+# Registro de intensidad lumínica:
 y_luz <- c(40, 10, 22, 26,
            28, 31, 44, 33,
            6, 6, 7, 14,
            41, 44, 51, 7,
            26, 31, 45, 11)
 
+# Marca de la pila en orden de medición:
 marca_luz <-c("Duracell", "Tronex", "Futura","Futura",
               "Varta","Varta", "Duracell", "Panasonic",
               "Tronex", "Tronex", "Futura", "Futura",
               "Varta", "Panasonic", "Panasonic", "Tronex",
               "Panasonic", "Duracell", "Duracell", "Varta")
 
-operador_luz <- c("Ximena", "Valentina", "Veronica", "Yojan",
-                  "Valentina", "Yojan", "Veronica", "Ximena",
-                  "Veronica", "Yojan", "Valentina", "Ximena", 
-                  "Veronica", "Valentina", "Yojan", "Ximena", 
-                  "Veronica", "Yojan", "Valentina", "Ximena")
+# Linternas en orden de medición:
+Linterna_luz <- c("3", "1", "2", "4",
+                  "1", "4", "2", "3",
+                  "2", "4", "1", "3", 
+                  "2", "1", "4", "3", 
+                  "2", "4", "1", "3")
 
-luz <- data.frame(y_luz, marca_luz,operador_luz)
+# Dataframe con los registros de intensidad lumínica, marcas y linternas:
+luz <- data.frame(y_luz, marca_luz,Linterna_luz)
 
-##### ---------------------------- Descriptivos luminosidad:
-# Por operador:
-by(luz$y_luz, luz$operador_luz, summary)
-by(luz$y_luz, luz$operador_luz, sd)
+## Análisis descriptivo para luminosidad:
+# Medidas descriptivas de acuerdo a la linterna:
+by(luz$y_luz, luz$Linterna_luz, summary)
+by(luz$y_luz, luz$Linterna_luz, sd)
 
-ggplot(data = luz, aes(x = operador_luz, y = y_luz, fill = factor(operador_luz))) +
+# Boxplot de luminosidad de acuerdo a la linterna:
+ggplot(data = luz, aes(x = Linterna_luz, y = y_luz, fill = factor(Linterna_luz))) +
   stat_boxplot(geom = "errorbar",
                width = 0.2) +
-  geom_boxplot(alpha = 0.6, outlier.colour = "red") +
+  geom_boxplot(alpha = 0.9, outlier.colour = "red") +
   scale_y_continuous(name = "Luminosidad") + 
-  scale_x_discrete(name = "Operador") +
-  ggtitle("Boxplot: Luminosidad de acuerdo al operador") +     
+  scale_x_discrete(name = "Linterna") +
+  ggtitle("Boxplot: Luminosidad de acuerdo a la linterna") +     
   theme(axis.line = element_line(colour = "black",
                                  size = 0.25))+
-  stat_summary(aes(y=y_luz, x=operador_luz),fun=mean, geom="point", shape=20,
-               size=4, color="yellow", position = position_dodge(0.75))+
-  scale_fill_manual(values = c("blue", "red","green", "pink"))+labs(fill = "Operador")
+  stat_summary(aes(y=y_luz, x=Linterna_luz),fun=mean, geom="point", shape=20,
+               size=4, color="gold", position = position_dodge(0.75))+
+  scale_fill_manual(values = c("maroon1", "chocolate","darkolivegreen3", "deepskyblue3"))+labs(fill = "Linterna")+
+  theme_minimal()
 
-### --------------- Descriptivos por marca
+## Medidas descriptivas de acuerdo a la marca:
 by(luz$y_luz, luz$marca_luz, summary)
 by(luz$y_luz, luz$marca_luz, sd)
 
+# Boxplot de luminosidad de acuerdo a la marca:
 ggplot(data = luz, aes(x = marca_luz, y = y_luz, fill = factor(marca_luz))) +
   stat_boxplot(geom = "errorbar",
                width = 0.2) +
-  geom_boxplot(alpha = 0.6, outlier.colour = "red") +
+  geom_boxplot(alpha = 0.9, outlier.colour = "red") +
   scale_y_continuous(name = "Luminosidad") + 
   scale_x_discrete(name = "Marca") +
-  ggtitle("Boxplot: Luminosidad de acuerdo al operador") +     
+  ggtitle("Boxplot: Luminosidad de acuerdo a la marca de pila") +     
   theme(axis.line = element_line(colour = "black",
                                  size = 0.25))+
   stat_summary(aes(y=y_luz, x=marca_luz),fun=mean, geom="point", shape=20,
-               size=4, color="yellow", position = position_dodge(0.75))+
-  scale_fill_manual(values = c("blue", "red","green", "pink", "cyan"))+labs(fill = "Marca")
+               size=4, color="gold", position = position_dodge(0.75))+
+  scale_fill_manual(values = c("maroon1", "chocolate","darkolivegreen3", "orange","deepskyblue3" ))+labs(fill = "Marca")+
+  theme_minimal()
 
-### ------------- Por operador y marca
-# No tiene mucho sentido pues solo hay una observación por tratamiento pero ayuda a mirar variabilidad:
-ggplot(luz,aes(operador_luz,y_luz, fill = operador_luz))+geom_boxplot()+facet_wrap(~marca_luz)+
-  stat_summary(aes(y=y_luz, x=operador_luz),fun=mean, geom="point", shape=20,size=4, color="yellow", position = position_dodge(0.75))+
-  labs(fill = "Operador", x = "Operador", y = "Luminosidad")
-
-
-ggplot(luz,aes(marca_luz,y_luz, fill = marca_luz))+geom_boxplot()+facet_wrap(~operador_luz)+
-  stat_summary(aes(y=y_luz, x=marca_luz),fun=mean, geom="point", shape=20,size=4, color="yellow", position = position_dodge(0.75))+
-  labs(fill = "Marca", x = "Marca", y = "Voltaje")
-
-
-#Modelo 
-modelo_luz <- aov(y_luz~marca_luz+operador_luz, data = luz)
+# ANOVA para luminosidad con un diseño de un factor con un bloque:
+modelo_luz <- aov(y_luz~marca_luz+Linterna_luz, data = luz)
 summary(modelo_luz)
 
-#Modelo sin bloque 
-
+# ANOVA para luminosidad con diseño de un factor: marca.
 modelo_luz2 <- aov(y_luz~marca_luz, data = luz)
 summary(modelo_luz2)
 
-#Normalidad
-qqnorm(residuals(modelo_luz2))
-qqline(residuals(modelo_luz2))
+### Validación de supuestos:
 
+## Diagnóstico de normalidad:
+# Q-Q plor
+qqnorm(residuals(modelo_luz2), pch = 19)
+qqline(residuals(modelo_luz2))
+# Test de Shapiro:
 shapiro.test(residuals(modelo_luz2))
 
-# Homogeneidad
+## Diagnóstico de homogeneidad de varianza:
+# Test de Bartlett:
 bartlett.test(y_luz~marca_luz)
-plot(fitted(modelo_luz2),residuals(modelo_luz2))
+# Gráfico de residuales versus valores ajustados:
+plot(fitted(modelo_luz2),residuals(modelo_luz2),pch=19, cex=1, 
+     col=c("maroon1", "chocolate","darkolivegreen3", "orange","deepskyblue3" ), 
+     xlab = "Valores ajustados", ylab = "Residuales", main = "Residuales vs. valores ajustados")
 abline(h=0)
 
-#Gráfico de residuales vs orden de recolección
-plot(residuals(modelo_luz2), pch =16, ylab="Residuales", xlab="Orden",
-     main="Gráfico de Orden vs Residuales")
-abline(h=0)
-
-
-### Orden 
-
-y_luz_orden <- c(40, 10, 22, 26,
-                 28, 31, 44, 33,
-                 6, 6, 7, 14,
-                 41, 44, 51, 7,
-                 26, 31, 45, 11)
-luz_marca_orden <- c("Duracell", "Tronex", "Futura", "Futura",
-                   "Varta", "Varta", "Duracell", "Panasonic", 
-                   "Tronex", "Tronex", "Futura", "Futura",
-                   "Varta", "Panasonic", "Panasonic", "Tronex",
-                   "Panasonic", "Duracell", "Duracell", "Varta")
-
-luz_orden <- data.frame(y_luz_orden, luz_marca_orden)
-
-mod_luz_orden <- aov(y_luz_orden~luz_marca_orden, data = luz_orden)
-summary(mod_luz_orden)
-# Independencia
-#Prueba de independencia Durbin Watson
+## Independencia de los errores:
+# Prueba de independencia Durbin Watson
 library(car)
-durbinWatsonTest(mod_luz_orden)
+durbinWatsonTest(modelo_luz2)
+plot(residuals(modelo_luz2), pch =16, ylab="Residuales", xlab="Orden",
+     main="Gráfico de Orden vs Residuales",
+     col=c("deepskyblue3", "chocolate","darkolivegreen3", "orange", "maroon1"),)
+abline(h=0)
 
-#Comparaciones 
-
+## Comparaciones múltiples: 
+# Método de Tukey
 tukey <- TukeyHSD(modelo_luz2, "marca_luz")
 tukey
 
-require(agricolae)
-duncann <- duncan.test(modelo_luz2, "marca_luz")
-duncann
-
+# Método de mínima diferencia:
 mds <- LSD.test(modelo_luz2, "marca_luz")
-mds
+mds$statistics$LSD
+mds$groups
 
-# Tamaño de muestra 
-library(pwr)
-f1 = sqrt(13.40866^2/(2*5*79.2))
+## Tamaño de muestra 
+
+# Con mean(diff)
+f1 = sqrt(17.33^2/(2*5*79.2))
 pwr.anova.test(f = f1, k=5, power=0.9, sig.level=0.05)
+
+## Potencia:
+f1 = sqrt(17.33^2/(2*5*79.2))
+pwr.anova.test(f = f1, k=5, power=0.4413751, sig.level=0.05)
